@@ -219,11 +219,30 @@ export default function BettingInterface() {
             setLossPrice(undefined)
 
             await txPromise
+            // In a real app we wouldn't clear betId immediately if user needs to claim
+            // but for this MVP debug flow it's okay.
+        } catch (err) {
+            console.error(err)
+            alert('Error resolving bet')
+        }
+    }
+
+    async function claimReward() {
+        if (!betId || !publicClient) return
+        try {
+            const hash = await writeContractAsync({
+                address: BETTING_CONTRACT_ADDRESS,
+                abi: BettingABI,
+                functionName: 'claimReward',
+                args: [BigInt(betId)],
+            })
+            await publicClient.waitForTransactionReceipt({ hash })
+            alert('Reward claimed successfully! Check your ARC balance.')
             setBetId('')
             setLastBetStatus(null)
         } catch (err) {
             console.error(err)
-            alert('Error resolving bet')
+            alert('Error claiming reward. Make sure the bet is resolved as WIN.')
         }
     }
 
@@ -435,9 +454,16 @@ export default function BettingInterface() {
                                 )}
 
                                 {lastBetStatus && (
-                                    <div className="bg-cyan-500/10 border border-cyan-500/50 rounded-lg p-3 text-center animate-in fade-in slide-in-from-top-2">
+                                    <div className="bg-cyan-500/10 border border-cyan-500/50 rounded-lg p-3 text-center animate-in fade-in slide-in-from-top-2 flex flex-col gap-2">
                                         <p className="text-cyan-400 font-bold text-sm">{lastBetStatus.message}</p>
-                                        <p className="text-xs text-gray-400 mt-1">Check Admin Panel below to resolve.</p>
+                                        <div className="flex gap-2 justify-center">
+                                            <button
+                                                onClick={claimReward}
+                                                className="bg-cyan-500 hover:bg-cyan-600 text-black text-xs font-bold px-4 py-1.5 rounded-full transition-all"
+                                            >
+                                                CLAIM REWARD 🏆
+                                            </button>
+                                        </div>
                                     </div>
                                 )}
 
@@ -512,7 +538,7 @@ export default function BettingInterface() {
                                                     options: {
                                                         address: USDC_ADDRESS,
                                                         symbol: 'USDC',
-                                                        decimals: 18,
+                                                        decimals: 6,
                                                     },
                                                 },
                                             })

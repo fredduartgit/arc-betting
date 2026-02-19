@@ -62,7 +62,7 @@ export default function CryptoChartLite({
         })
 
         // Initial data based on basePrice
-        const initialData = []
+        const initialData: { time: any; value: number }[] = []
         let currentPrice = basePrice
         const now = Math.floor(Date.now() / 1000)
 

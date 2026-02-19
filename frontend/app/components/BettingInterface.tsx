@@ -13,9 +13,9 @@ import { ArrowUp, ArrowDown, Trophy, AlertTriangle, Loader2, XCircle, CheckCircl
 
 // REPLACE WITH YOUR DEPLOYED CONTRACT ADDRESS
 // UPDATED INFRASTRUCTURE (USDC 6 Decimals / ARC 18 Decimals)
-const BETTING_CONTRACT_ADDRESS = "0x0610Fa5a78ABa116fd662e7B6aE12Ca39f08f81D"
+const BETTING_CONTRACT_ADDRESS = "0x419b79fD4b73b2062bEf1408Fa85dfEDCc785d04"
 const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" // OFFICIAL ARC USDC (6 DECIMALS)
-const ARC_ADDRESS = "0xBc01028A0B99AAb8513Bb442b43ee1F051c3A901" // OUR REWARD TOKEN (18 DECIMALS)
+const ARC_ADDRESS = "0xbF982A1b152353FA1f6EDddB396Cc5438c5Fe29D" // OUR REWARD TOKEN (18 DECIMALS)
 
 const CRYPTO_PRICES: Record<string, number> = {
     'BTC': 66450,
@@ -70,7 +70,6 @@ export default function BettingInterface() {
     }, [selectedCrypto])
 
     // Read Allowance
-    // ... rest of code stays same but need to handle the replacement carefully
     const { data: allowance, refetch: refetchAllowance } = useReadContract({
         address: USDC_ADDRESS,
         abi: erc20Abi,
@@ -81,8 +80,17 @@ export default function BettingInterface() {
         }
     })
 
+    // Read Max Bet Amount
+    const { data: maxBetAmount } = useReadContract({
+        address: BETTING_CONTRACT_ADDRESS,
+        abi: BettingABI,
+        functionName: 'maxBetAmount',
+    })
+
     // @ts-ignore
     const hasAllowance = allowance && betAmount && allowance >= parseUnits(betAmount, 6)
+
+    const isAmountOverLimit = betAmount && maxBetAmount && parseUnits(betAmount, 6) > (maxBetAmount as bigint)
 
     async function handleConnect() {
         connect({ connector: injected() })
@@ -427,10 +435,10 @@ export default function BettingInterface() {
                                     <div className="grid grid-cols-2 gap-4">
                                         <button
                                             onClick={() => placeBet(true)}
-                                            disabled={!betAmount || isBetting}
+                                            disabled={!betAmount || isBetting || isAmountOverLimit}
                                             className={`
                                             relative overflow-hidden group/btn flex flex-col items-center justify-center gap-2 py-6 rounded-xl border border-green-900/50 bg-green-500/10 transition-all
-                                            ${(!betAmount || isBetting) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-500/20 hover:border-green-500 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_15px_rgba(34,197,94,0.2)]'}
+                                            ${(!betAmount || isBetting || isAmountOverLimit) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-green-500/20 hover:border-green-500 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_15px_rgba(34,197,94,0.2)]'}
                                         `}
                                         >
                                             <div className="absolute inset-0 bg-green-500/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
@@ -440,10 +448,10 @@ export default function BettingInterface() {
 
                                         <button
                                             onClick={() => placeBet(false)}
-                                            disabled={!betAmount || isBetting}
+                                            disabled={!betAmount || isBetting || isAmountOverLimit}
                                             className={`
                                             relative overflow-hidden group/btn flex flex-col items-center justify-center gap-2 py-6 rounded-xl border border-red-900/50 bg-red-500/10 transition-all
-                                            ${(!betAmount || isBetting) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-500/20 hover:border-red-500 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_15px_rgba(239,68,68,0.2)]'}
+                                            ${(!betAmount || isBetting || isAmountOverLimit) ? 'opacity-50 cursor-not-allowed' : 'hover:bg-red-500/20 hover:border-red-500 hover:scale-[1.02] active:scale-[0.98] shadow-[0_0_15px_rgba(239,68,68,0.2)]'}
                                         `}
                                         >
                                             <div className="absolute inset-0 bg-red-500/20 translate-y-full group-hover/btn:translate-y-0 transition-transform duration-300"></div>
@@ -451,6 +459,12 @@ export default function BettingInterface() {
                                             <span className="text-red-400 font-bold text-lg z-10">DOWN</span>
                                         </button>
                                     </div>
+                                )}
+
+                                {isAmountOverLimit && (
+                                    <p className="text-red-400 text-[10px] text-center mt-2 font-bold animate-pulse">
+                                        ⚠️ Max limit: {maxBetAmount ? formatUnits(maxBetAmount as bigint, 6) : '10'} USDC
+                                    </p>
                                 )}
 
                                 {lastBetStatus && (

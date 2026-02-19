@@ -15,6 +15,8 @@ contract Betting is Ownable {
     IERC20 public paymentToken;
     IERC20 public rewardToken;
     uint256 public nextBetId;
+    uint256 public maxBetAmount; // Max amount allowed per bet (in paymentToken decimals)
+
     mapping(uint256 => Bet) public bets;
     mapping(uint256 => bool) public betResolved;
     mapping(uint256 => bool) public betWon;
@@ -22,14 +24,17 @@ contract Betting is Ownable {
     event BetPlaced(uint256 indexed betId, address indexed user, uint256 amount, bool isUp);
     event BetResolved(uint256 indexed betId, bool won);
     event RewardsClaimed(uint256 indexed betId, address indexed user, uint256 amount);
+    event MaxBetAmountUpdated(uint256 newAmount);
 
     constructor(address _paymentToken, address _rewardToken) Ownable(msg.sender) {
         paymentToken = IERC20(_paymentToken);
         rewardToken = IERC20(_rewardToken);
+        maxBetAmount = 10 * (10**6); // Default limit: 10 USDC (assuming 6 decimals)
     }
 
     function placeBet(uint256 amount, bool isUp) external {
         require(amount > 0, "Amount must be > 0");
+        require(amount <= maxBetAmount, "Amount exceeds maximum bet limit");
         require(paymentToken.transferFrom(msg.sender, address(this), amount), "Transfer failed");
 
         bets[nextBetId] = Bet(msg.sender, amount, isUp, false);
@@ -74,5 +79,11 @@ contract Betting is Ownable {
         // Contract sends USDC back to user (6 decimals) -> divide by 10^12
         uint256 usdcAmount = amount / (10**12);
         require(paymentToken.transfer(msg.sender, usdcAmount), "USDC transfer failed");
+    }
+
+    // Set maximum bet amount (only owner)
+    function setMaxBetAmount(uint256 _maxAmount) external onlyOwner {
+        maxBetAmount = _maxAmount;
+        emit MaxBetAmountUpdated(_maxAmount);
     }
 }

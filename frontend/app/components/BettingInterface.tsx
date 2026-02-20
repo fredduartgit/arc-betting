@@ -50,6 +50,8 @@ export default function BettingInterface() {
     const [isSwapOpen, setIsSwapOpen] = useState(false)
     const [lastBetStatus, setLastBetStatus] = useState<{ id: string, message: string } | null>(null)
     const [resultModal, setResultModal] = useState<{ type: 'win' | 'loss', amount?: string } | null>(null)
+    const [newMaxBet, setNewMaxBet] = useState('')
+    const [isSettingMaxBet, setIsSettingMaxBet] = useState(false)
 
     // Price markings for the chart
     const [basePrice, setBasePrice] = useState(() => (CRYPTO_PRICES['BTC'] || 66450) + (Math.random() - 0.5) * 50)
@@ -81,7 +83,7 @@ export default function BettingInterface() {
     })
 
     // Read Max Bet Amount
-    const { data: maxBetAmount } = useReadContract({
+    const { data: maxBetAmount, refetch: refetchMaxBet } = useReadContract({
         address: BETTING_CONTRACT_ADDRESS,
         abi: BettingABI,
         functionName: 'maxBetAmount',
@@ -505,6 +507,47 @@ export default function BettingInterface() {
                                     />
                                     <button onClick={() => resolveBet(true)} className="bg-green-900/50 text-green-400 text-xs px-3 py-2 rounded hover:bg-green-900">Win</button>
                                     <button onClick={() => resolveBet(false)} className="bg-red-900/50 text-red-400 text-xs px-3 py-2 rounded hover:bg-red-900">Lose</button>
+                                </div>
+                            </div>
+
+                            <div className="pt-4 border-t border-gray-800">
+                                <h3 className="text-sm font-bold text-gray-400 mb-2 flex items-center gap-2">
+                                    <RefreshCw size={16} className={isSettingMaxBet ? 'animate-spin' : ''} /> Set Max Bet limit
+                                </h3>
+                                <div className="flex gap-2">
+                                    <div className="relative flex-1">
+                                        <input
+                                            type="text"
+                                            placeholder="New Max (e.g. 50)"
+                                            value={newMaxBet}
+                                            onChange={(e) => setNewMaxBet(e.target.value)}
+                                            className="w-full bg-black/50 border border-gray-700 rounded px-3 py-2 text-sm pr-12"
+                                        />
+                                        <span className="absolute right-3 top-2 text-gray-500 text-xs">USDC</span>
+                                    </div>
+                                    <button
+                                        onClick={async () => {
+                                            if (!newMaxBet || !publicClient) return
+                                            setIsSettingMaxBet(true)
+                                            try {
+                                                const hash = await writeContractAsync({
+                                                    address: BETTING_CONTRACT_ADDRESS,
+                                                    abi: BettingABI,
+                                                    functionName: 'setMaxBetAmount',
+                                                    args: [parseUnits(newMaxBet, 6)]
+                                                })
+                                                await publicClient.waitForTransactionReceipt({ hash })
+                                                await refetchMaxBet()
+                                                alert(`Max bet updated to ${newMaxBet} USDC!`)
+                                                setNewMaxBet('')
+                                            } catch (e) { console.error(e); alert('Error updating limit') }
+                                            finally { setIsSettingMaxBet(false) }
+                                        }}
+                                        disabled={isSettingMaxBet}
+                                        className="bg-purple-900/50 text-purple-400 text-xs px-4 py-2 rounded hover:bg-purple-900 transition-colors disabled:opacity-50"
+                                    >
+                                        Update
+                                    </button>
                                 </div>
                             </div>
 

@@ -3,24 +3,7 @@
 import { ArrowRight, Twitter, TrendingUp, Users, Award, ExternalLink, Wallet, ArrowUp, Trophy } from 'lucide-react'
 import { useState } from 'react'
 
-// Custom Discord Icon since Lucide might not have the brand one
-const DiscordIcon = ({ size = 24, className = "" }) => (
-    <svg
-        width={size}
-        height={size}
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        strokeWidth="2"
-        strokeLinecap="round"
-        strokeLinejoin="round"
-        className={className}
-    >
-        <path d="M9 12h6m-6 0a3 3 0 01-3-3V7a3 3 0 013-3h6a3 3 0 013 3v2a3 3 0 01-3 3m-6 0a3 3 0 00-3 3v2a3 3 0 003 3h6a3 3 0 003-3v-2a3 3 0 00-3-3" />
-        <circle cx="9" cy="12" r="1" />
-        <circle cx="15" cy="12" r="1" />
-    </svg>
-)
+
 
 const StatCard = ({ icon: Icon, label, value, subtext, delay = 0, className = "" }: any) => (
     <div
@@ -147,10 +130,7 @@ export default function LandingPage({ onPlay }: { onPlay: () => void }) {
                 </div>
                 <div className="flex gap-8">
                     <a href="https://x.com" target="_blank" className="hover:text-cyan-400 transition-all flex items-center gap-2 group">
-                        <Twitter size={18} className="group-hover:scale-110 transition-transform" /> Twitter
-                    </a>
-                    <a href="https://discord.com" target="_blank" className="hover:text-purple-400 transition-all flex items-center gap-2 group">
-                        <DiscordIcon size={18} className="group-hover:scale-110 transition-transform" /> Discord
+                        <Twitter size={18} className="group-hover:scale-110 transition-transform" /> Follow on X
                     </a>
                 </div>
             </footer>

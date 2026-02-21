@@ -1,6 +1,6 @@
 'use client'
 
-import { ArrowRight, Twitter, TrendingUp, Users, Award, ExternalLink, Wallet, ArrowUp, Trophy } from 'lucide-react'
+import { ArrowRight, Twitter, Github, TrendingUp, Users, Award, ExternalLink, Wallet, ArrowUp, Trophy } from 'lucide-react'
 import { useState } from 'react'
 
 
@@ -129,6 +129,9 @@ export default function LandingPage({ onPlay }: { onPlay: () => void }) {
                     © 2026 ARC Betting • Built for Testnet
                 </div>
                 <div className="flex gap-8">
+                    <a href="https://github.com/fredduartgit" target="_blank" className="hover:text-white transition-all flex items-center gap-2 group">
+                        <Github size={18} className="group-hover:scale-110 transition-transform" /> GitHub
+                    </a>
                     <a href="https://x.com/arcbetting" target="_blank" className="hover:text-cyan-400 transition-all flex items-center gap-2 group">
                         <Twitter size={18} className="group-hover:scale-110 transition-transform" /> Follow on X
                     </a>

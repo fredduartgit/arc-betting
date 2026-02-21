@@ -92,7 +92,7 @@ export default function BettingInterface() {
     // @ts-ignore
     const hasAllowance = allowance && betAmount && allowance >= parseUnits(betAmount, 6)
 
-    const isAmountOverLimit = betAmount && maxBetAmount && parseUnits(betAmount, 6) > (maxBetAmount as bigint)
+    const isAmountOverLimit = Boolean(betAmount && maxBetAmount && parseUnits(betAmount, 6) > (maxBetAmount as bigint))
 
     async function handleConnect() {
         connect({ connector: injected() })

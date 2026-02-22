@@ -16,7 +16,6 @@ import { ArrowUp, ArrowDown, Trophy, AlertTriangle, Loader2, XCircle, CheckCircl
 const BETTING_CONTRACT_ADDRESS = "0x419b79fD4b73b2062bEf1408Fa85dfEDCc785d04"
 const USDC_ADDRESS = "0x3600000000000000000000000000000000000000" // OFFICIAL ARC USDC (6 DECIMALS)
 const ARC_ADDRESS = "0xbF982A1b152353FA1f6EDddB396Cc5438c5Fe29D" // OUR REWARD TOKEN (18 DECIMALS)
-const ADMIN_ADDRESS = "0x892a0e1C5A8c983A7669baB99234812fFD542D29" // THE CAPTAIN'S WALLET
 
 const CRYPTO_PRICES: Record<string, number> = {
     'BTC': 66450,
@@ -88,6 +87,13 @@ export default function BettingInterface() {
         address: BETTING_CONTRACT_ADDRESS,
         abi: BettingABI,
         functionName: 'maxBetAmount',
+    })
+
+    // Read Contract Owner for Admin Panel Privacy
+    const { data: contractOwner } = useReadContract({
+        address: BETTING_CONTRACT_ADDRESS,
+        abi: BettingABI,
+        functionName: 'owner',
     })
 
     // @ts-ignore
@@ -491,8 +497,8 @@ export default function BettingInterface() {
                         )}
                     </div>
 
-                    {/* Admin Card - Only Visible to Captain */}
-                    {isConnected && address?.toLowerCase() === ADMIN_ADDRESS.toLowerCase() && (
+                    {/* Admin Card - Only Visible to Contract Owner */}
+                    {isConnected && address && contractOwner && address.toLowerCase() === (contractOwner as string).toLowerCase() && (
                         <div className="bg-[#121212] border border-gray-800 rounded-xl p-6 opacity-75 hover:opacity-100 transition-opacity space-y-4">
                             <div>
                                 <h3 className="text-sm font-bold text-gray-400 mb-2 flex items-center gap-2">
